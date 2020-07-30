@@ -130,3 +130,42 @@ We can use compound queries such as `thingsRef.where(...).orderBy(...)`.
 
 In order to scale, some queries need a composite index.
 
+## 06. Security
+
+The problem is that any user or anyone on the internet can  view the database
+records.
+
+We need to implement database security rules.
+
+By default, it allows full access for one month: `allow read, write: if request.time < timestamp.date(2020, 8, 28);`
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /things/{docId} {
+      allow write: if request.auth.uid == request.resource.data.uid;
+      allow read: if request.auth.uid == resource.data.uid;
+    }
+  }
+}
+```
+Actions:
+* Deny all read and write
+* Allow write if (UID of logged in user) == (UID in the record to write)
+  * Prevents documents to be created by other users
+* Allow read if (UID of logged in user) == (UID of the records to read)
+
+Notes:
+* `{docId}` is a wildcard that allows using a reference to the value
+
+Now we have an application where:
+* We must be logged in to write records
+* We must be logged in to read records
+* We can only read our own records
+
