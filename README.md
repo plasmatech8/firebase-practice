@@ -35,7 +35,7 @@ Deploy the app using: `firebase deploy`
 * This will upload the public folder to a storage bucket and host it at a provided URL on the public internet (i.e. https://marioplan-52689.web.app/)
 * We can view all the versions of our deployments in the Firebase console and we can add our custom domains
 
-### 04. Authentication
+## 04. Authentication
 
 Enable authentication on Firebase.
 
