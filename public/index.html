@@ -12,6 +12,7 @@
   <!-- TODO: Add SDKs for Firebase products that you want to use
      https://firebase.google.com/docs/web/setup#available-libraries -->
   <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-analytics.js"></script>
+  <script src="/__/firebase/7.17.1/firebase-auth.js"></script>
 
   <script>
     // Your web app's Firebase configuration
@@ -36,6 +37,17 @@
 
 <body>
   <h1>Hello Firebase App!!!</h1>
+
+  <section id="userDetails"></section>
+
+  <section id="whenSignedOut">
+    <button id="signInBtn">Sign in with Google</button>
+  </section>
+
+  <section id="whenSignedIn">
+    <button id="signOutBtn">Sign out</button>
+  </section>
+
 </body>
 
 </html>
