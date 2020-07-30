@@ -169,3 +169,8 @@ Now we have an application where:
 * We must be logged in to read records
 * We can only read our own records
 
+## 07. Moving forward
+
+Check out cloud functions and cloud storage.
+
+Check out firebase extensions (e.g. Stripe, Translate)
