@@ -78,3 +78,55 @@ You can run a callback method on `auth` whenever the user logs in/out.
 
 
 ![](docs/2020-07-30-16-43-19.png)
+
+## 05. Firestore
+
+Firebase provides 2 NoSQL databases:
+* Realtime Database
+* Cloud Firestore
+
+Firestore tends to be better for most use-cases.
+
+Firestore can be syncronised by default between our frontend and backend
+without any extra effort.
+
+```js
+const db = firebase.firestore();
+
+const createThing = document.getElementById('createThing');
+const thingsList = document.getElementById('thingsList');
+
+let thingsRef;
+let unsubscribe;
+
+auth.onAuthStateChanged(user => { // Only show list when user is logged in
+  if (user) {
+    thingsRef = db.collection('things');
+
+    createThing.onclick = () => { // Add a new record on click
+      const { serverTimestamp } = firebase.firestore.FieldValue;
+      thingsRef.add({
+        uid: user.uid,
+        name: Math.random().toString(36).substring(7),
+        createdAt: serverTimestamp() // (use firebase timestamp as Date format can differ by device)
+      });
+    }
+
+    unsubscribe = thingsRef // Firestore reference returns a function for unsubscribing
+      .where('uid', '==', user.uid)
+      .onSnapshot(querySnapshot => {
+        const items = querySnapshot.docs.map(doc => {
+          return `<li>${doc.data().name}</li>`
+        });
+        thingsList.innerHTML = items.join(''); // update dom with items
+      });
+  } else {
+    unsubscribe && unsubscribe(); // Unsubscribe when no logged in
+  }
+});
+```
+
+We can use compound queries such as `thingsRef.where(...).orderBy(...)`.
+
+In order to scale, some queries need a composite index.
+
