@@ -58,6 +58,7 @@ auth.onAuthStateChanged(user => { // Only show list when user is logged in
         thingsList.innerHTML = items.join('');
       });
   } else {
+    createThing.onclick = null;
     unsubscribe && unsubscribe();
   }
 });
