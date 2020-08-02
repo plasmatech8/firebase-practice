@@ -9,6 +9,12 @@ export const AuthProvider = ({ children }) => {
   // On mount
   useEffect(() => app.auth().onAuthStateChanged(setCurrentUser), [])
 
+  // When something changes
+  useEffect(() => {
+    if (currentUser)
+      console.log('USER CHANGED TO ' + currentUser.displayName)
+  }, [currentUser])
+
   return (
     <AuthContext.Provider value={{ currentUser }}>
       {children}

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import {
   BrowserRouter as Router,
   Route,
@@ -7,13 +7,20 @@ import {
 import Home from './Home'
 import Login from './Login'
 import SignUp from './SignUp'
-import { AuthProvider } from './Auth'
+import { AuthProvider, AuthContext } from './Auth'
 import PrivateRoute from './PrivateRoute'
+
+
+function Header() {
+  const { currentUser } = useContext(AuthContext)
+  return <p>{currentUser ? 'logged in' : 'not logged in'}</p>
+}
 
 function App() {
   return (
     <AuthProvider>
       <div>
+        <Header />
         <Router>
           <ul>
             <li><Link to="/">Home</Link></li>
