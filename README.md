@@ -11,4 +11,13 @@ with backend validation.
 
 ![](docs/2020-08-07-15-30-42.png)
 
-## 01.
+## 01. Setup
+
+Firebase init:
+* Firestore
+* Functions
+* Hosting
+* Emulators
+
+View the website using `firebase serve`
+
