@@ -21,3 +21,10 @@ Firebase init:
 
 View the website using `firebase serve`
 
+## 02. HTML template
+
+An input form/modal will pop up when we add a new request (for a tutorial). It
+will close when the background is clicked on (and not the form box).
+
+![](docs/2020-08-09-16-04-27.png)
+
