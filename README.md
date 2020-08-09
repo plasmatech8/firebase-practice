@@ -61,3 +61,43 @@ firebase deploy --only functions
 If you get `Error: Cloud Functions deployment requires the pay-as-you-go (Blaze) billing plan.`,
 use the Blaze billing plan (functions is no longer free for Node 10 and Node 8
 will be decommissioned in 03/2020).
+
+## 04. Callable Functions
+
+We created a HTTP endpoint function. Now we will create a callable function,
+which is meant to be called using our code.
+
+Callable functions are the same as HTTP, but it does some extra work for you:
+* On client
+  * Handling CORS with the request
+  * Sending authenticated user token
+  * sending device instance ID
+  * Serializing input object from the client
+  * Deserialising response object in the client
+* On backend:
+  * Validating the user token
+  * Deserialising input object
+  * Serialising response object
+
+`functions/index.js` (define the callable function)
+```js
+// Callable function
+exports.sayHello = functions.https.onCall((data, context) => {
+  const name = data.name
+  return `Hello ${name}!`
+})
+```
+
+`public/js/app.js` (call the function with input data)
+```js
+// say hello function call
+const button = document.querySelector('.call')
+button.addEventListener('click', () => {
+  // get function reference
+  const sayHello = firebase.functions().httpsCallable('sayHello')
+  // invoke function (async function / promise)
+  sayHello({ name: 'Mark' }).then(result => {
+    alert(result.data);
+  })
+})
+```

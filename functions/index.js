@@ -20,3 +20,11 @@ exports.randomNumber = functions.https.onRequest((req, res) => {
 exports.toTheDojo = functions.https.onRequest((req, res) => {
   res.redirect('https://www.thenetninja.co.uk')
 })
+
+
+// Callable function
+exports.sayHello = functions.https.onCall((data, context) => {
+  const name = data.name
+  return `Hello ${name}!`
+})
+
