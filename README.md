@@ -176,3 +176,24 @@ signOut.addEventListener('click', () => {
   firebase.auth().signOut();
 });
 ```
+
+## 08. Auth Triggers
+
+We will remove old HTTP and callable functions.
+
+We will create auth triggers that log when a new user is created/deleted.
+
+```js
+// Auth trigger (new user signup)
+exports.newUserSignup = functions.auth.user().onCreate((user) => {
+  console.log('User created', user.email, user.uid);
+});
+
+// Auth trigger (user deleted)
+exports.userDeleted = functions.auth.user().onDelete((user) => {
+  console.log('User deleted', user.email, user.uid);
+});
+```
+
+These functions are not called by the client, but it will raise a warning log
+because it expects a Promise or value regardless. We will address this next.

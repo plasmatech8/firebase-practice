@@ -14,13 +14,3 @@ requestModal.addEventListener('click', (e) => {
   }
 });
 
-// say hello function call
-const button = document.querySelector('.call')
-button.addEventListener('click', () => {
-  // get function reference
-  const sayHello = firebase.functions().httpsCallable('sayHello')
-  // invoke the function (async function / promise)
-  sayHello({ name: 'Mark' }).then(result => {
-    alert(result.data);
-  })
-})
