@@ -5,13 +5,15 @@ by The Net Ninja on YouTube.
 
 References: https://github.com/iamshaunjp/firebase-functions/
 
+## 01. Introduction
+
 We will create use Auth, Firestore to create a website. Firebase Cloud
 Functions will allow us to perform database operations from a trusted source
 with backend validation.
 
 ![](docs/2020-08-07-15-30-42.png)
 
-## 01. Setup
+## 02. Setup
 
 Firebase init:
 * Firestore
@@ -21,14 +23,14 @@ Firebase init:
 
 View the website using `firebase serve`
 
-## 02. HTML template
+## 03. HTML template
 
 An input form/modal will pop up when we add a new request (for a tutorial). It
 will close when the background is clicked on (and not the form box).
 
 ![](docs/2020-08-09-16-04-27.png)
 
-## 03. Creating and Deploying a Function
+## 04. Creating and Deploying a Function
 
 There are a number of triggers that can be used for a function. We will be
 using a HTTP trigger.
@@ -62,7 +64,7 @@ If you get `Error: Cloud Functions deployment requires the pay-as-you-go (Blaze)
 use the Blaze billing plan (functions is no longer free for Node 10 and Node 8
 will be decommissioned in 03/2020).
 
-## 04. Callable Functions
+## 05. Callable Functions
 
 We created a HTTP endpoint function. Now we will create a callable function,
 which is meant to be called using our code.
@@ -102,7 +104,7 @@ button.addEventListener('click', () => {
 })
 ```
 
-## 05. Auth Model Templates
+## 06. Auth Model Templates
 
 Hooking up Auth to the functions.
 
@@ -136,3 +138,41 @@ appropriate CSS.
 ```
 For now, we will only add JavaScript for switching between login and register.
 
+## 07. Firebase Authentication
+
+We will enable the Email signin method in the Firebase console.
+
+We can add event listeners and the Firebase Auth async functions to login,
+signup, automatically signin, and manage error messages.
+```js
+// Login form
+loginForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const email = loginForm.email.value;
+  const password = loginForm.password.value;
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then((user) => {
+      console.log('Logged in', user);
+      loginForm.reset();
+    })
+    .catch((error) => {
+      loginForm.querySelector('.error').textContent = error.message;
+    });
+});
+
+// Display the auth modal when the the user logs in/out
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    authWrapper.classList.remove('open');
+    authModals.forEach(modal => modal.classList.remove('active'))
+  } else {
+    authWrapper.classList.add('open');
+    authModals[0].classList.add('active');
+  }
+});
+
+// Sign out button
+signOut.addEventListener('click', () => {
+  firebase.auth().signOut();
+});
+```
