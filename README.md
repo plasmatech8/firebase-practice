@@ -231,3 +231,57 @@ exports.userDeleted = functions.auth.user().onDelete((user) => {
 ```
 
 It returns a promise so we don't need to worry about warnings.
+
+## 10. Function to add a New Tutorial Request
+
+We will create a callable function which can be called from the frontend form.
+
+```js
+// http callable function (adding a tutorial request)
+exports.addRequest = functions.https.onCall((data, context) => {
+  // (if user not logged in)
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Only authenticated users can add tutorial requests'
+    );
+  }
+  // (if text too long)
+  if (data.text.length > 30) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'Request must be 30 characters or less'
+    );
+  }
+  // Add record to database
+  return admin.firestore().collection('requests').add({
+    text: data.text,
+    upvotes: 0,
+  });
+});
+```
+## 11. Integrate New Tutorial Request to front-end
+
+Now we will set our New Request form to invoke the Function on submit.
+
+```js
+const requestForm = document.querySelector('.new-request-form')
+// ...
+
+// add a new request
+requestForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  requestForm.querySelector('.error').textContent = '';
+
+  const addRequest = firebase.functions().httpsCallable('addRequest');
+  addRequest({
+    text: e.target.request.value
+  }).then(() => {
+    requestForm.reset();
+    requestModal.classList.remove('open');
+
+  }).catch(error => {
+    requestForm.querySelector('.error').textContent = error.message;
+  });
+});
+```

@@ -37,3 +37,26 @@ exports.userDeleted = functions.auth.user().onDelete((user) => {
   const docRef = admin.firestore().collection('users').doc(user.uid);
   return docRef.delete();
 });
+
+// http callable function (adding a tutorial request)
+exports.addRequest = functions.https.onCall((data, context) => {
+  // (if user not logged in)
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Only authenticated users can add tutorial requests'
+    );
+  }
+  // (if text too long)
+  if (data.text.length > 30) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'Request must be 30 characters or less'
+    );
+  }
+  // Add record to database
+  return admin.firestore().collection('requests').add({
+    text: data.text,
+    upvotes: 0,
+  });
+});
