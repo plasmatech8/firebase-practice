@@ -1,59 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-
-  <!-- The core Firebase JS SDK is always required and must be listed first -->
-  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
-
-  <!-- TODO: Add SDKs for Firebase products that you want to use
-     https://firebase.google.com/docs/web/setup#available-libraries -->
-  <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-analytics.js"></script>
-  <script src="/__/firebase/7.17.1/firebase-auth.js"></script>
-  <script src="/__/firebase/7.17.1/firebase-firestore.js"></script>
-
-  <script>
-    // Your web app's Firebase configuration
-    var firebaseConfig = {
-      apiKey: "AIzaSyCnGJDqq4mPmSRobuxuRemuyeC3_64voas",
-      authDomain: "marioplan-52689.firebaseapp.com",
-      databaseURL: "https://marioplan-52689.firebaseio.com",
-      projectId: "marioplan-52689",
-      storageBucket: "marioplan-52689.appspot.com",
-      messagingSenderId: "423214097707",
-      appId: "1:423214097707:web:73ef1e65c45a2f3889d16e",
-      measurementId: "G-G8C9LVH96P"
-    };
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    firebase.analytics();
-  </script>
-
-  <!-- App script -->
-  <script src="app.js" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tutorial Requests</title>
+  <!-- stylesheets -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
-  <h1>Hello Firebase App!!!</h1>
 
-  <!-- Auth -->
-  <section id="userDetails"></section>
-  <section id="whenSignedOut">
-    <button id="signInBtn">Sign in with Google</button>
-  </section>
-  <section id="whenSignedIn">
-    <button id="signOutBtn">Sign out</button>
+  <!-- auth modals -->
+  <div class="auth open">
+
+    <div class="modal">
+      <h2>Login</h2>
+      <form class="login">
+        <input type="text" name="email" placeholder="Email">
+        <input type="password" name="password" placeholder="Password">
+        <button>Login</button>
+        <p class="error"></p>
+      </form>
+      <div>No account? <a class="switch">Register instead</a></div>
+    </div>
+
+    <div class="modal">
+      <h2>Register</h2>
+      <form class="register">
+        <input type="text" name="email" placeholder="Email">
+        <input type="password" name="password" placeholder="Password">
+        <button>Register</button>
+        <p class="error"></p>
+      </form>
+      <div>Got an account? <a class="switch">Login instead</a></div>
+    </div>
+  </div>
+
+  <!-- new request modal -->
+  <div class="new-request">
+    <div class="modal">
+      <h2>Request a Tutorial</h2>
+      <form>
+        <input type="text" name="request" placeholder="Request...">
+        <button>Submit Request</button>
+        <p class="error"></p>
+      </form>
+    </div>
+  </div>
+
+  <header>
+    <nav>
+      <a class="add-request">add request</a>
+      <a class="sign-out">sign out</a>
+    </nav>
+  </header>
+
+  <section class="content">
+    <h1>Tutorial Requests</h1>
+    <ul class="request-list">
+      <li>
+        <span class="text">Laravel 6 tutorial</span>
+        <div>
+          <span class="votes">125</span>
+          <i class="material-icons upvote">arrow_upward</i>
+        </div>
+      </li>
+    </ul>
+
   </section>
 
-  <!-- Firestore -->
-  <section>
-    <button id="createThing">Create a random thing</button>
-    <ul id="thingsList"></ul>
-  </section>
+  <!-- update the version number as needed -->
+  <script src="/__/firebase/7.7.0/firebase-app.js"></script>
+  <!-- include only the Firebase features as you need -->
+  <script src="/__/firebase/7.7.0/firebase-auth.js"></script>
+  <script src="/__/firebase/7.7.0/firebase-firestore.js"></script>
+  <script src="/__/firebase/7.7.0/firebase-functions.js"></script>
+  <!-- initialize the SDK after all desired features are loaded -->
+  <script src="/__/firebase/init.js"></script>
 
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
 </body>
 
 </html>
