@@ -1,4 +1,6 @@
 const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+admin.initializeApp();
 
 /*
 // Return random number
@@ -23,9 +25,15 @@ exports.sayHello = functions.https.onCall((data, context) => {
 // Auth trigger (new user signup)
 exports.newUserSignup = functions.auth.user().onCreate((user) => {
   console.log('User created', user.email, user.uid);
+  return admin.firestore().collection('users').doc(user.uid).set({
+    email: user.email,
+    upvotedOn: []
+  });
 });
 
 // Auth trigger (user deleted)
 exports.userDeleted = functions.auth.user().onDelete((user) => {
   console.log('User deleted', user.email, user.uid);
+  const docRef = admin.firestore().collection('users').doc(user.uid);
+  return docRef.delete();
 });

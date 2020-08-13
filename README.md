@@ -197,3 +197,37 @@ exports.userDeleted = functions.auth.user().onDelete((user) => {
 
 These functions are not called by the client, but it will raise a warning log
 because it expects a Promise or value regardless. We will address this next.
+
+## 09. Creating User Records
+
+What if we want to store other information about a user? Hobbies, biography,
+settings, etc.
+
+We will create user records when our Auth trigger functions.
+
+We will initialize the app using admin and create/delete records in the
+Auth trigger functions.
+```js
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+// ...
+
+// Auth trigger (new user signup)
+exports.newUserSignup = functions.auth.user().onCreate((user) => {
+  console.log('User created', user.email, user.uid);
+  admin.firestore().collection('users').doc(user.uid).set({
+    email: user.email,
+    upvotedOn: []
+  });
+});
+
+// Auth trigger (user deleted)
+exports.userDeleted = functions.auth.user().onDelete((user) => {
+  console.log('User deleted', user.email, user.uid);
+  const docRef = admin.firestore().collection('users').doc(user.uid);
+  return docRef.delete();
+});
+```
+
+It returns a promise so we don't need to worry about warnings.
