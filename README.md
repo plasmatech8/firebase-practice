@@ -285,3 +285,37 @@ requestForm.addEventListener('submit', (e) => {
   });
 });
 ```
+
+## 12. Firestore Realtime Data
+
+We will allow read access to all documents in the requests collection.
+```
+match /requests/{docId} {
+  allow read;
+  allow write: if false;
+}
+```
+This is so we can read data from the front-end. (We previously had full access
+to firestore because firebase functions have full admin access).
+
+Then we will read from the database.
+```js
+const ref = firebase.firestore().collection('requests');
+
+ref.onSnapshot(snapshot => {
+  var requests = [];
+
+  snapshot.forEach(doc => {
+    requests.push({ ...doc.data(), id: doc.id });
+  });
+
+  let html = ``;
+  requests.forEach(request => {
+    html += `<li>${request.text}</li>`;
+  });
+  document.querySelector('ul').innerHTML = html;
+});
+```
+
+However, using templates strings and innerHTML is tedious and not good
+practice. We will use a Vue template to manage each list item.
