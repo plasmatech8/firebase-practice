@@ -1,5 +1,6 @@
 const requestModal = document.querySelector('.new-request');
 const requestLink = document.querySelector('.add-request');
+const requestForm = document.querySelector('.new-request form')
 
 // open request modal
 requestLink.addEventListener('click', () => {
@@ -14,3 +15,19 @@ requestModal.addEventListener('click', (e) => {
   }
 });
 
+// add a new request
+requestForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  requestForm.querySelector('.error').textContent = '';
+
+  const addRequest = firebase.functions().httpsCallable('addRequest');
+  addRequest({
+    text: e.target.request.value
+  }).then(() => {
+    requestForm.reset();
+    requestModal.classList.remove('open');
+
+  }).catch(error => {
+    requestForm.querySelector('.error').textContent = error.message;
+  });
+});
