@@ -1,287 +1,176 @@
 # firebase-practice
 
-Following [this tutorial](https://www.youtube.com/watch?v=udHm7I_OvJs&list=PL4cUxeGkcC9i_aLkr62adUTJi53y7OjOf)
-by The Net Ninja on YouTube.
+Following [this tutorial](https://www.youtube.com/watch?v=q5J5ho7YUhA) by
+Fireship.
 
-References: https://github.com/iamshaunjp/firebase-functions/
+## 01. Setup
 
-## 01. Introduction
+* Ensure node is installed (i.e. with nvm)
+* Create Firebase project
 
-We will create use Auth, Firestore to create a website. Firebase Cloud
-Functions will allow us to perform database operations from a trusted source
-with backend validation.
+## 02. Basic Connection
 
-![](docs/2020-08-07-15-30-42.png)
+Create a Firebase web app and copy the code snippets into your public
+index.html code.
 
-## 02. Setup
-
-Firebase init:
-* Firestore
-* Functions
-* Hosting
-* Emulators
-
-View the website using `firebase serve`
-
-## 03. HTML template
-
-An input form/modal will pop up when we add a new request (for a tutorial). It
-will close when the background is clicked on (and not the form box).
-
-![](docs/2020-08-09-16-04-27.png)
-
-## 04. Creating and Deploying a Function
-
-There are a number of triggers that can be used for a function. We will be
-using a HTTP trigger.
-
-![](docs/2020-08-09-16-07-11.png)
-
-We will create a simple random number function in
-[functions/index.js](functions/index.js).
+You should be able to console log firebase as a global variable.
 ```js
-const functions = require('firebase-functions');
-
-// Return random number
-exports.randomNumber = functions.https.onRequest((req, res) => {
-  const number = Math.round(Math.random() * 100)
-  console.log(`LOGGING NUMBER (${number}) TO FIREBASE CONSOLE!`)
-  res.send(number.toString())
-})
-
-// Redirect to website
-exports.toTheDojo = functions.https.onRequest((req, res) => {
-  res.redirect('https://www.thenetninja.co.uk')
-})
+console.log(firebase);
 ```
 
-Now we can deploy our functions:
-```bash
-firebase deploy --only functions
-```
+## 03. Firebase CLI
 
-If you get `Error: Cloud Functions deployment requires the pay-as-you-go (Blaze) billing plan.`,
-use the Blaze billing plan (functions is no longer free for Node 10 and Node 8
-will be decommissioned in 03/2020).
+You can install using: `sudo npm install firebase-tools -g`
 
-## 05. Callable Functions
+Login with the CLI: `firebase login`
 
-We created a HTTP endpoint function. Now we will create a callable function,
-which is meant to be called using our code.
+Initialise the repo: `firebase init`
+* Hosting is for deploying a front-end application (i.e. React)
+* Emulators is for local testing without pushing code to the internet
+* This will create a gitignore, firebase.json, firebaserc, and can create a starter index.html if we want
 
-Callable functions are the same as HTTP, but it does some extra work for you:
-* On client
-  * Handling CORS with the request
-  * Sending authenticated user token
-  * sending device instance ID
-  * Serializing input object from the client
-  * Deserialising response object in the client
-* On backend:
-  * Validating the user token
-  * Deserialising input object
-  * Serialising response object
+Serve the app locally using either: `firebase serve` or `firebase emulators:start`
 
-`functions/index.js` (define the callable function)
+Deploy the app using: `firebase deploy`
+* This will upload the public folder to a storage bucket and host it at a provided URL on the public internet (i.e. https://marioplan-52689.web.app/)
+* We can view all the versions of our deployments in the Firebase console and we can add our custom domains
+
+## 04. Authentication
+
+Enable authentication on Firebase.
+
+Make sure you add the CDN link to auth in the `index.html`.
+
 ```js
-// Callable function
-exports.sayHello = functions.https.onCall((data, context) => {
-  const name = data.name
-  return `Hello ${name}!`
-})
-```
+const auth = firebase.auth();
 
-`public/js/app.js` (call the function with input data)
-```js
-// say hello function call
-const button = document.querySelector('.call')
-button.addEventListener('click', () => {
-  // get function reference
-  const sayHello = firebase.functions().httpsCallable('sayHello')
-  // invoke function (async function / promise)
-  sayHello({ name: 'Mark' }).then(result => {
-    alert(result.data);
-  })
-})
-```
+// Get elements
+const whenSignedIn = document.getElementById('whenSignedIn');
+const whenSignedOut = document.getElementById('whenSignedOut');
+const signOutBtn = document.getElementById('signOutBtn');
+const signInBtn = document.getElementById('signInBtn');
+const userDetails = document.getElementById('userDetails');
 
-## 06. Auth Model Templates
+// Providers (i.e. facebook, email, etc)
+const provider = new firebase.auth.GoogleAuthProvider();
 
-Hooking up Auth to the functions.
-
-We will create a Model for login and a model for registration, and add
-appropriate CSS.
-```html
-  <div class="auth open">
-
-    <div class="modal active">
-      <h2>Login</h2>
-      <form class="login">
-        <input type="text" name="email" placeholder="Email">
-        <input type="password" name="password" placeholder="Password">
-        <button>Login</button>
-        <p class="error"></p>
-      </form>
-      <div>No account? <a class="switch">Register instead</a></div>
-    </div>
-
-    <div class="modal">
-      <h2>Register</h2>
-      <form class="register">
-        <input type="text" name="email" placeholder="Email">
-        <input type="password" name="password" placeholder="Password">
-        <button>Register</button>
-        <p class="error"></p>
-      </form>
-      <div>Got an account? <a class="switch">Login instead</a></div>
-    </div>
-  </div>
-```
-For now, we will only add JavaScript for switching between login and register.
-
-## 07. Firebase Authentication
-
-We will enable the Email signin method in the Firebase console.
-
-We can add event listeners and the Firebase Auth async functions to login,
-signup, automatically signin, and manage error messages.
-```js
-// Login form
-loginForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const email = loginForm.email.value;
-  const password = loginForm.password.value;
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then((user) => {
-      console.log('Logged in', user);
-      loginForm.reset();
-    })
-    .catch((error) => {
-      loginForm.querySelector('.error').textContent = error.message;
-    });
-});
-
-// Display the auth modal when the the user logs in/out
-firebase.auth().onAuthStateChanged((user) => {
+signInBtn.onclick = () => auth.signInWithPopup(provider);
+signOutBtn.onclick = () => auth.signOut();
+auth.onAuthStateChanged(user => {
   if (user) {
-    authWrapper.classList.remove('open');
-    authModals.forEach(modal => modal.classList.remove('active'))
+    whenSignedIn.hidden = false;
+    whenSignedOut.hidden = true;
+    userDetails.innerHTML = `<h3>Hello ${user.displayName}!</h3><p>UID: ${user.uid}</p>`
   } else {
-    authWrapper.classList.add('open');
-    authModals[0].classList.add('active');
+    whenSignedIn.hidden = true;
+    whenSignedOut.hidden = false;
+    userDetails.innerHTML = `Not logged in`
   }
 });
-
-// Sign out button
-signOut.addEventListener('click', () => {
-  firebase.auth().signOut();
-});
 ```
 
-## 08. Auth Triggers
+When you sign-in, notice in your browser storage that there is data in
+`IndexedDB/firebaseLocalStorageDb/firebaseLocalStorage`.
+* It contains user information until the signout button is pressed.
+* You can also see the user in the auth dashboard.
 
-We will remove old HTTP and callable functions.
+You can run a callback method on `auth` whenever the user logs in/out.
 
-We will create auth triggers that log when a new user is created/deleted.
 
-```js
-// Auth trigger (new user signup)
-exports.newUserSignup = functions.auth.user().onCreate((user) => {
-  console.log('User created', user.email, user.uid);
-});
+![](docs/2020-07-30-16-43-19.png)
 
-// Auth trigger (user deleted)
-exports.userDeleted = functions.auth.user().onDelete((user) => {
-  console.log('User deleted', user.email, user.uid);
-});
-```
+## 05. Firestore
 
-These functions are not called by the client, but it will raise a warning log
-because it expects a Promise or value regardless. We will address this next.
+Firebase provides 2 NoSQL databases:
+* Realtime Database
+* Cloud Firestore
 
-## 09. Creating User Records
+Firestore tends to be better for most use-cases.
 
-What if we want to store other information about a user? Hobbies, biography,
-settings, etc.
-
-We will create user records when our Auth trigger functions.
-
-We will initialize the app using admin and create/delete records in the
-Auth trigger functions.
-```js
-const admin = require('firebase-admin');
-admin.initializeApp();
-
-// ...
-
-// Auth trigger (new user signup)
-exports.newUserSignup = functions.auth.user().onCreate((user) => {
-  console.log('User created', user.email, user.uid);
-  admin.firestore().collection('users').doc(user.uid).set({
-    email: user.email,
-    upvotedOn: []
-  });
-});
-
-// Auth trigger (user deleted)
-exports.userDeleted = functions.auth.user().onDelete((user) => {
-  console.log('User deleted', user.email, user.uid);
-  const docRef = admin.firestore().collection('users').doc(user.uid);
-  return docRef.delete();
-});
-```
-
-It returns a promise so we don't need to worry about warnings.
-
-## 10. Function to add a New Tutorial Request
-
-We will create a callable function which can be called from the frontend form.
+Firestore can be syncronised by default between our frontend and backend
+without any extra effort.
 
 ```js
-// http callable function (adding a tutorial request)
-exports.addRequest = functions.https.onCall((data, context) => {
-  // (if user not logged in)
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      'unauthenticated',
-      'Only authenticated users can add tutorial requests'
-    );
+const db = firebase.firestore();
+
+const createThing = document.getElementById('createThing');
+const thingsList = document.getElementById('thingsList');
+
+let thingsRef;
+let unsubscribe;
+
+auth.onAuthStateChanged(user => { // Only show list when user is logged in
+  if (user) {
+    thingsRef = db.collection('things');
+
+    createThing.onclick = () => { // Add a new record on click
+      const { serverTimestamp } = firebase.firestore.FieldValue;
+      thingsRef.add({
+        uid: user.uid,
+        name: Math.random().toString(36).substring(7),
+        createdAt: serverTimestamp() // (use firebase timestamp as Date format can differ by device)
+      });
+    }
+
+    unsubscribe = thingsRef // Firestore reference returns a function for unsubscribing
+      .where('uid', '==', user.uid)
+      .onSnapshot(querySnapshot => {
+        const items = querySnapshot.docs.map(doc => {
+          return `<li>${doc.data().name}</li>`
+        });
+        thingsList.innerHTML = items.join(''); // update dom with items
+      });
+  } else {
+    unsubscribe && unsubscribe(); // Unsubscribe when no logged in
   }
-  // (if text too long)
-  if (data.text.length > 30) {
-    throw new functions.https.HttpsError(
-      'invalid-argument',
-      'Request must be 30 characters or less'
-    );
+});
+```
+
+We can use compound queries such as `thingsRef.where(...).orderBy(...)`.
+
+In order to scale, some queries need a composite index.
+
+## 06. Security
+
+The problem is that any user or anyone on the internet can  view the database
+records.
+
+We need to implement database security rules.
+
+By default, it allows full access for one month: `allow read, write: if request.time < timestamp.date(2020, 8, 28);`
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /things/{docId} {
+      allow write: if request.auth.uid == request.resource.data.uid;
+      allow read: if request.auth.uid == resource.data.uid;
+    }
   }
-  // Add record to database
-  return admin.firestore().collection('requests').add({
-    text: data.text,
-    upvotes: 0,
-  });
-});
+}
 ```
-## 11. Integrate New Tutorial Request to front-end
+Actions:
+* Deny all read and write
+* Allow write if (UID of logged in user) == (UID in the record to write)
+  * Prevents documents to be created by other users
+* Allow read if (UID of logged in user) == (UID of the records to read)
 
-Now we will set our New Request form to invoke the Function on submit.
+Notes:
+* `{docId}` is a wildcard that allows using a reference to the value
 
-```js
-const requestForm = document.querySelector('.new-request-form')
-// ...
+Now we have an application where:
+* We must be logged in to write records
+* We must be logged in to read records
+* We can only read our own records
 
-// add a new request
-requestForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  requestForm.querySelector('.error').textContent = '';
+## 07. Moving forward
 
-  const addRequest = firebase.functions().httpsCallable('addRequest');
-  addRequest({
-    text: e.target.request.value
-  }).then(() => {
-    requestForm.reset();
-    requestModal.classList.remove('open');
+Check out cloud functions and cloud storage.
 
-  }).catch(error => {
-    requestForm.querySelector('.error').textContent = error.message;
-  });
-});
-```
+Check out firebase extensions (e.g. Stripe, Translate)
