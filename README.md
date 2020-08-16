@@ -319,3 +319,43 @@ ref.onSnapshot(snapshot => {
 
 However, using templates strings and innerHTML is tedious and not good
 practice. We will use a Vue template to manage each list item.
+
+## 13. Adding a Vue Instance
+
+We will create a Vue app instance.
+```js
+var app = new Vue({
+  el: '#app',
+  data: {
+    requests: [],
+  },
+  mounted() { // on mount
+    const ref = firebase.firestore().collection('requests');
+    ref.onSnapshot(snapshot => {
+      var requests = [];
+      snapshot.forEach(doc => {
+        requests.push({ ...doc.data(), id: doc.id });
+      });
+      this.requests = requests;
+    });
+  }
+});
+```
+
+Then we will set our requests list HTML section as the Vue instance.
+```html
+  <section class="content" id="app">
+    <h1>Tutorial Requests</h1>
+    <ul class="request-list">
+      <li v-for="request in requests">
+        <span class="text">{{ request.text }}</span>
+        <div>
+          <span class="votes">{{ request.upvotes }}</span>
+          <i class="material-icons upvote">arrow_upward</i>
+        </div>
+      </li>
+    </ul>
+  </section>
+```
+The `v-for` directive will be used to make a request item in the list for each
+request in the data.
