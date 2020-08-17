@@ -60,3 +60,64 @@ exports.addRequest = functions.https.onCall((data, context) => {
     upvotes: 0,
   });
 });
+
+
+// http callable function (adding a tutorial request)
+exports.upvote = functions.https.onCall((data, context) => {
+  // If user not logged in
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Only authenticated users can add tutorial requests'
+    );
+  }
+
+  // Get refs for user doc and request doc
+  const user = admin.firestore().collection('users').doc(context.auth.uid);
+  const request = admin.firestore().collection('requests').doc(data.id);
+
+  /*
+  // BETTER: (toggle version + uses async to avoid nested Promises)
+  const update = async () => {
+    const doc = await user.get();
+    const alreadyUpvoted = doc.data().upvotedOn.includes(data.id);
+
+    // Update user upvotedOn array
+    await user.update({
+      upvotedOn: alreadyUpvoted
+        ? doc.data().upvotedOn.filter(item => item !== data.id)
+        : [...doc.data().upvotedOn, data.id]
+    });
+    // Update request upvote counter
+    return await request.update({
+      upvotes: alreadyUpvoted
+        ? admin.firestore.FieldValue.increment(-1)
+        : admin.firestore.FieldValue.increment(1)
+    });
+  };
+  return update();
+  */
+
+  // Add record to database
+  return user.get().then(doc => {
+    // Check user has not already upvoted
+    if (doc.data().upvotedOn.includes(data.id)) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'You can only upvote a request once'
+      );
+    }
+    // Update user array
+    return userUpvote = user.update({
+      upvotedOn: [...doc.data().upvotedOn, data.id]
+    }).then(() => {
+      // Update votes on request
+      return request.update({
+        upvotes: admin.firestore.FieldValue.increment(1)
+      });
+    });
+  });
+});
+
+
+

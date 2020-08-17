@@ -359,3 +359,95 @@ Then we will set our requests list HTML section as the Vue instance.
 ```
 The `v-for` directive will be used to make a request item in the list for each
 request in the data.
+
+## 14. Upvoting Function (back-end)
+
+We will make an upvoting function. Only authenticated users will be able to
+upvote, and a user can only upvote once.
+
+```js
+// http callable function (adding a tutorial request)
+exports.upvote = functions.https.onCall((data, context) => {
+  // If user not logged in
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Only authenticated users can add tutorial requests'
+    );
+  }
+
+  /*
+  // BETTER: (toggle version + uses async to avoid nested Promises)
+  // Get refs for user doc and request doc
+  const user = admin.firestore().collection('users').doc(context.auth.uid);
+  const request = admin.firestore().collection('requests').doc(data.id);
+
+  const update = async () => {
+    const doc = await user.get();
+    const alreadyUpvoted = doc.data().upvotedOn.includes(data.id);
+
+    // Update user upvotedOn array
+    await user.update({
+      upvotedOn: alreadyUpvoted
+        ? doc.data().upvotedOn.filter(item => item !== data.id)
+        : [...doc.data().upvotedOn, data.id]
+    });
+    // Update request upvote counter
+    return await request.update({
+      upvotes: alreadyUpvoted
+        ? admin.firestore.FieldValue.increment(-1)
+        : admin.firestore.FieldValue.increment(1)
+    });
+  };
+  return update();
+  */
+
+  // Add record to database
+  return user.get().then(doc => {
+    // Check user has not already upvoted
+    if (doc.data().upvotedOn.includes(data.id)) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'You can only upvote a request once'
+      );
+    }
+    // Update user array
+    return userUpvote = user.update({
+      upvotedOn: [...doc.data().upvotedOn, data.id]
+    }).then(() => {
+      // Update votes on request
+      return request.update({
+        upvotes: admin.firestore.FieldValue.increment(1)
+      });
+    });
+  });
+});
+```
+
+## 15. Upvoting Function (front-end)
+
+We will upate the Vue instance to run a method call on button press and make
+the requests ordered by votes.
+```js
+methods: {
+    upvoteRequest(id) {
+      const upvote = firebase.functions().httpsCallable('upvote');
+      console.log(id)
+      upvote({ id }).then(result => {
+        console.log(result);
+      }).catch(error => {
+        console.log(error.message);
+      });
+    }
+  },
+  mounted() {
+    const ref = firebase.firestore().collection('requests').orderBy('upvotes', 'desc');
+    ref.onSnapshot(snapshot => {
+      var requests = [];
+      snapshot.forEach(doc => {
+        requests.push({ ...doc.data(), id: doc.id });
+      });
+      this.requests = requests;
+    });
+  }
+```
