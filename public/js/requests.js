@@ -12,6 +12,7 @@ var app = new Vue({
         console.log(result);
       }).catch(error => {
         console.log(error.message);
+        showNotification(error.message);
       });
     }
   },

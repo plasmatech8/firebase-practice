@@ -451,3 +451,28 @@ methods: {
     });
   }
 ```
+
+## 16. Error Notification
+
+We will create a notification panel that drops down to show a message.
+
+It will have a class `active` which applies CSS to transition it up and down
+from the top of the page.
+
+We will create a function which will open the notification which deactivates
+after 3 seconds.
+```js
+// notification
+const notification = document.querySelector('.notification');
+const showNotification = message => {
+  notification.textContent = message;
+  notification.classList.add('active');
+  setTimeout(() => {
+    notification.classList.remove('active');
+    notification.textContent = "";
+  }, 3000);
+}
+```
+
+We will use this for 'You cannot upvote more than once'.
+
