@@ -476,3 +476,28 @@ const showNotification = message => {
 
 We will use this for 'You cannot upvote more than once'.
 
+## 17. Refactor to Upvote function to Async/Await
+
+We can refactor the cloud function to use async/await syntax.
+```js
+  // Get user document from database
+  const doc = await user.get()
+
+  // Check user has not already upvoted
+  if (doc.data().upvotedOn.includes(data.id)) {
+    throw new functions.https.HttpsError(
+      'failed-precondition',
+      'You can only upvote a request once'
+    );
+  }
+
+  // Update the user upvotedOn array
+  await user.update({
+    upvotedOn: [...doc.data().upvotedOn, data.id]
+  });
+
+  // Update the votes on request
+  return request.update({
+    upvotes: admin.firestore.FieldValue.increment(1)
+  });
+```

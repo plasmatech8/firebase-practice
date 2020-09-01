@@ -63,7 +63,7 @@ exports.addRequest = functions.https.onCall((data, context) => {
 
 
 // http callable function (adding a tutorial request)
-exports.upvote = functions.https.onCall((data, context) => {
+exports.upvote = functions.https.onCall(async (data, context) => {
   // If user not logged in
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -98,24 +98,25 @@ exports.upvote = functions.https.onCall((data, context) => {
   return update();
   */
 
-  // Add record to database
-  return user.get().then(doc => {
-    // Check user has not already upvoted
-    if (doc.data().upvotedOn.includes(data.id)) {
-      throw new functions.https.HttpsError(
-        'failed-precondition',
-        'You can only upvote a request once'
-      );
-    }
-    // Update user array
-    return userUpvote = user.update({
-      upvotedOn: [...doc.data().upvotedOn, data.id]
-    }).then(() => {
-      // Update votes on request
-      return request.update({
-        upvotes: admin.firestore.FieldValue.increment(1)
-      });
-    });
+  // Get user document from database
+  const doc = await user.get()
+
+  // Check user has not already upvoted
+  if (doc.data().upvotedOn.includes(data.id)) {
+    throw new functions.https.HttpsError(
+      'failed-precondition',
+      'You can only upvote a request once'
+    );
+  }
+
+  // Update the user upvotedOn array
+  await user.update({
+    upvotedOn: [...doc.data().upvotedOn, data.id]
+  });
+
+  // Update the votes on request
+  return request.update({
+    upvotes: admin.firestore.FieldValue.increment(1)
   });
 });
 
